@@ -15,4 +15,10 @@ class ProfileUpdateForm(forms.ModelForm):
     
     class Meta:
         model = Profile
-        fields = ['image','bio']        
+        fields = ['image','bio'] 
+
+class ProjectForm(forms.ModelForm):
+    
+    class Meta:
+        model = Project
+        exclude =['author','profile','like','comments']                       
