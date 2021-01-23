@@ -108,4 +108,17 @@ class Project(models.Model):
 
     def content(self):
         avg_content =list( map(lambda x: x.content_rating, self.ratings.all()))
-        return np.mean(avg_content)        
+        return np.mean(avg_content)     
+
+class Comment(models.Model):
+    content = models.TextField(null=True)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comment')
+    date_posted = models.DateTimeField(auto_now_add=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_comment')        
+    
+    def __str__(self):
+        return self.comment
+    
+    def save_comment(self):
+        self.save()    
+                   
