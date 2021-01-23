@@ -1,0 +1,5 @@
+Hello {{name}}
+
+Welcome to the Awwwards Website!
+    This website is very intereting and your honest opininions will be appreciated.
+    You will be able to rate and review projects.
