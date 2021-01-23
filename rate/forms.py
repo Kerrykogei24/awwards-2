@@ -21,4 +21,13 @@ class ProjectForm(forms.ModelForm):
     
     class Meta:
         model = Project
-        exclude =['author','profile','like','comments']                       
+        exclude =['author','profile','like','comments']   
+
+class RatingForm(forms.ModelForm):
+    class Meta:
+        model = Ratings
+        design_rating = forms.IntegerField()
+        usability_rating = forms.IntegerField()
+        content_rating = forms.IntegerField()
+        comment = forms.CharField(widget=forms.Textarea(attrs={"class": "form-control","placeholder": "Leave a comment"}))    
+        exclude =['project','author']                                
