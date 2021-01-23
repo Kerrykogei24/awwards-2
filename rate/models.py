@@ -62,3 +62,50 @@ class Location(models.Model):
 
     def delete_location(self):
         self.delete()
+
+class Project(models.Model):
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='author')
+    project_image = models.ImageField(upload_to='projects/',null=True)
+    project_title = models.CharField(max_length=100, null=True)
+    description = models.TextField(max_length=1000,  null=True)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='profile')
+    date_posted = models.DateTimeField(auto_now_add=True)
+    location=models.ForeignKey(Location, on_delete=models.CASCADE, null=True)
+    tags=models.ManyToManyField(tags, blank=True)
+    like = models.PositiveIntegerField(default=0)
+    
+    def __str__(self):
+            return self.project_title
+    
+    def save_image(self):
+        self.save()
+        
+    @classmethod
+    def get_projects(cls):
+        projects = Project.objects.all()
+        return projects
+    
+    @classmethod
+    def find_project(cls,search_term):
+        project = Project.objects.filter(project_title__icontains=search_term)
+        return project
+    
+    @property
+    def number_of_comments(self):
+        return Comment.objects.filter(project=self).count()
+    
+    @property
+    def number_of_tags(self):
+        return tags.objects.filter(project=self).count()
+    
+    def design(self):
+        avg_design =list( map(lambda x: x.design_rating, self.ratings.all()))
+        return np.mean(avg_design)
+
+    def usability(self):
+        avg_usability =list( map(lambda x: x.usability_rating, self.ratings.all()))
+        return np.mean(avg_usability)
+
+    def content(self):
+        avg_content =list( map(lambda x: x.content_rating, self.ratings.all()))
+        return np.mean(avg_content)        
