@@ -1,33 +1,19 @@
 from django import forms
-from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import *
-
-class UserUpdateForm(forms.ModelForm):
-    email = forms.EmailField()
-    bio = forms.CharField() 
-
-    class Meta:
-        model = User
-        fields = ['username','email']
-
-class ProfileUpdateForm(forms.ModelForm):
-    
-    class Meta:
-        model = Profile
-        fields = ['image','bio'] 
+from django.contrib.auth.models import User
+from .models import Project, Profile, Rate
 
 class ProjectForm(forms.ModelForm):
-    
     class Meta:
         model = Project
-        exclude =['author','profile','like','comments']   
+        exclude = ['user', 'pub_date', 'profile']
 
-class RatingForm(forms.ModelForm):
+class ProfileForm(forms.ModelForm):
     class Meta:
-        model = Ratings
-        design_rating = forms.IntegerField()
-        usability_rating = forms.IntegerField()
-        content_rating = forms.IntegerField()
-        comment = forms.CharField(widget=forms.Textarea(attrs={"class": "form-control","placeholder": "Leave a comment"}))    
-        exclude =['project','author']                                
+        model = Profile
+        exclude = ['user','rate']
+
+class RateForm(forms.ModelForm):
+    class Meta:
+        model =Rate
+        exclude= ['user','project']
