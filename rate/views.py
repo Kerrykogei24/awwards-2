@@ -24,7 +24,7 @@ def home(request):
     context={
         'projects' : projects,
     }
-    return render(request,"index.html", context)
+    return render(request,"home.html", context)
 
 @login_required(login_url='/accounts/login/')
 def project(request):
