@@ -1,90 +1,57 @@
 {% load bootstrap4 %}
-{% load static %}
+{% load static%}
 <!DOCTYPE html>
 <html>
 
 <head>
-    <meta charset="utf-8">
+  <meta charset="utf-8">
+  <link rel="icon" href="../../static/images/" />
+  {% if title %}
+  <title>Awwards</title>
+  {% else %}
+  <link rel="icon" href="../../static/images/" />
+  <title> Awwards</title>
+  {% endif %}
 
-    {% if title %}
-    <title> Awwwards {{title}}</title>
-    {% else %}
-    <title> Awwwards </title>
-    {% endif %}
-
-    {% block styles %}
-    {% bootstrap_css %}
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
-    <!-- Google Fonts -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
-    <!-- Bootstrap core CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Material Design Bootstrap -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/css/mdb.min.css" rel="stylesheet">
-    {% endblock %}
+  {% block styles %}
+  {% bootstrap_css %}
+  <link rel="stylesheet" href="{% static 'css/award.css' %}">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU"
+    crossorigin="anonymous">
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Comfortaa" rel="stylesheet">
+  <link href="http://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery-bar-rating/1.2.2/themes/fontawesome-stars-o.css" rel="stylesheet" />
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="https://cdn.bootcss.com/jquery-bar-rating/1.2.2/jquery.barrating.min.js"></script>
+  {% endblock %}
 
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/">
-                <img src="{% static 'photos/awwwards_logo.png' %}" style="height:100px;width:150px;" alt="image">
-            </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
-                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                <div class="navbar-nav">
-                    <a class="nav-item nav-link active text-dark" href="#">About <span
-                            class="sr-only">(current)</span></a>
-                </div>
-                <div class="navbar-nav ml-auto">
-                    <a class="navbar-brand" href="#"></a>
-                    {% if user.is_authenticated %}
-                    <a class="nav-item nav-link text-dark" href="{% url 'profile' %}">Settings</a>
-                    <a class="nav-item nav-link text-dark" href="/accounts/password_change">Change Password</a>
-                    <a class="nav-item nav-link text-dark" href="{% url 'logout' %}">Logout</a>
-                    <a class="nav-item nav-link text-dark" href="{% url 'project' %}">Upload Project</a>
-                    {% else %}
-                    <a class="nav-item nav-link text-dark" href="/accounts/login">Login</a>
-                    <a class="nav-item nav-link text-dark" href="/accounts/register">Register</a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </nav>
-    <main role="main" class="container-fluid">
-        <br>
-        <div class="row">
-            <div class="col-md-12">
-                {% if messages %}
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
-                    {{ message }}
-                </div>
-                {% endfor %}
-                {% endif %}
-            </div>
-        </div>
-    </main>
-    {% block scripts %}
-    <!-- JQuery -->
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <!-- Bootstrap tooltips -->
-    <script type="text/javascript"
-        src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.4/umd/popper.min.js"></script>
-    <!-- Bootstrap core JavaScript -->
-    <script type="text/javascript"
-        src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/js/bootstrap.min.js"></script>
-    <!-- MDB core JavaScript -->
-    <script type="text/javascript"
-        src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/js/mdb.min.js"></script>
-    {% bootstrap_javascript %}
-    {% endblock %}
+  {% include "navbar.html" %}
+  {% block content %} {%endblock%}
 
+  {% block scripts %}
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  {% bootstrap_javascript %}
+  {% endblock %}
+  <footer>
+    ...
+  </footer>
+  <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+  <script src="{% static 'js/award.js' %}"></script>
+  {% block javascript %}
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.3/jquery.min.js">
+  </script>
+  <script src="https://use.fontawesome.com/191e478c5e.js"></script>
+  {% endblock %}
 </body>
 
 </html>
