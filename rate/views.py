@@ -1,227 +1,167 @@
-from django.shortcuts import render, HttpResponseRedirect, redirect, get_object_or_404
-from django.http import HttpResponse, Http404,HttpResponseRedirect
-from django.contrib.auth import authenticate, login
-from django.contrib.auth import logout as django_logout
+from django.shortcuts import render,redirect,get_object_or_404
+from django.http import HttpResponse,Http404
 from django.contrib.auth.decorators import login_required
+from .models import Project,Profile,Rate
+from .forms import ProjectForm,ProfileForm,RateForm
 from django.contrib.auth.models import User
-from django.views.decorators.csrf import csrf_protect
-from django.contrib import messages
-from .models import *
-from .forms import *
-from django.http import JsonResponse
+import datetime as dt
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializer import *
-# from rest_framework import viewsets
-# from rest_framework import permissions
+from .serializer import ProfileSerializer,ProjectSerializer
 from rest_framework import status
 from .permissions import IsAdminOrReadOnly
-# from .token_generator import account_activation_token
 
+def convert_dates(dates):
+    # function that gets the weekday number for the date.
+    day_number = dt.date.weekday(dates)
 
-def home(request):
-    projects = Project.get_projects()
-    context={
-        'projects' : projects,
-    }
-    return render(request,"home.html", context)
+    days = ['Monday','Tuesday','Wednesday','thursday','Friday','Saturday','Sunday']
+    '''
+    Returns the actual day of the week
+    '''
+    day = days[day_number]
+    return day
 
-@login_required(login_url='/accounts/login/')
-def project(request):
-    current_user = request.user
-    profiles = Profile.get_profile()
-    for profile in profiles:
-        if profile.user.id == current_user.id:
-            if request.method == 'POST':
-                form = ProjectForm(request.POST,request.FILES)
-                if form.is_valid():
-                    new_project = form.save(commit=False)
-                    new_project.author = current_user
-                    new_project.profile = profile
-                    new_project.save()
-                    return redirect('home')
-            else:
-                form = ProjectForm()
-                
-            context = {
-                'user':current_user,
-                'form':form
-            }
-            return render(request,'project.html', context)
-    
-@login_required(login_url='/accounts/login/')
-def profile(request,profile_id):
-    profile = Profile.objects.get(pk = profile_id)
-    project = Project.objects.filter(profile_id=profile).all()
-    
-    context = {
-        'profile':profile,
-        'project':project
-    }
-    return render(request,"profile.html", context)    
+# Create your views here.
+# @login_required(login_url='/accounts/login')
+def home_page(request):
+    date = dt.date.today()
+    project = Project.objects.all()
+    # profile = User.objects.get(username=request.user)
+    return render(request,'home.html',locals())
 
-@login_required
-def logout(request):
-    django_logout(request)
-    return  HttpResponseRedirect('/')
-
-@login_required(login_url='/accounts/login/')
-def new_profile(request):
-    project = Project.objects.filter(author=request.user).order_by('-date_posted')
+@login_required(login_url='/accounts/login')
+def upload_project(request):
     if request.method == 'POST':
-        u_form = UserUpdateForm(request.POST, instance=request.user)
-        p_form = ProfileUpdateForm(request.POST,
-                                   request.FILES,
-                                   instance=request.user.profile)
-        if u_form.is_valid() and p_form.is_valid():
-            u_form.save()
-            p_form.save()
-            messages.success(request, f'Your account has been updated!')
-            return redirect('profile')
+        uploadform = ProjectForm(request.POST, request.FILES)
+        if uploadform.is_valid():
+            upload = uploadform.save(commit=False)
+            upload.profile = request.user.profile
+            upload.save()
+            return redirect('home_page')
+    else:
+        uploadform = ProjectForm()
+    return render(request,'update-project.html',locals())
+
+def view_project(request):
+    project = Project.objects.get_all()
+    return render(request,'home.html', locals())
+
+def search_results(request):
+    profile= Profile.objects.all()
+    project= Project.objects.all()
+    if 'Project' in request.GET and request.GET["project"]:
+        search_term = request.GET.get("project")
+        searched_project = Project.search_by_profile(search_term)
+        message = f"{search_term}"
+
+        return render(request, 'search.html',locals())
 
     else:
-        u_form = UserUpdateForm(instance=request.user)
-        p_form = ProfileUpdateForm(instance=request.user.profile)
-
-    context = {
-        'u_form': u_form,
-        'p_form': p_form,
-        'project' : project
-    }
-    return render(request, 'profile/profile.html', context)  
-
+        message = "You haven't searched for any term"
+        return render(request,'search.html',{"message":message})
 @login_required(login_url='/accounts/login/')
-def project(request):
-    current_user = request.user
-    profiles = Profile.get_profile()
-    for profile in profiles:
-        if profile.user.id == current_user.id:
-            if request.method == 'POST':
-                form = ProjectForm(request.POST,request.FILES)
-                if form.is_valid():
-                    project = form.save(commit=False)
-                    project.author = current_user
-                    project.profile = profile
-                    project.save()
-                    return redirect('home')
-            else:
-                form = ProjectForm()
-                
-                context = {
-                    'user':current_user,
-                    'form':form
-                }
-            return render(request,'project.html', context)
-        
+def profile(request, username):
+    projo = Project.objects.all()
+    profile = User.objects.get(username=username)
+    # print(profile.id)
+    try:
+        profile_details = Profile.get_by_id(profile.id)
+    except:
+        profile_details = Profile.filter_by_id(profile.id)
+    projo = Project.get_profile_projects(profile.id)
+    title = f'@{profile.username} awwward projects and screenshots'
+
+    return render(request, 'profile.html', locals())
+    '''
+    editing user profile fillform & submission
+ 
+    '''
 @login_required(login_url='/accounts/login/')
-@csrf_protect
-def rating(request, pk):
-    project = get_object_or_404(Project, pk=pk)
-    current_user = request.user
+def edit(request):
+    profile = User.objects.get(username=request.user)
+
     if request.method == 'POST':
-        form = RatingForm(request.POST)
+        form = ProfileForm(request.POST, request.FILES)
         if form.is_valid():
-            design_rating = form.cleaned_data["design_rating"]
-            usability_rating = form.cleaned_data["usability_rating"]
-            content_rating = form.cleaned_data["content_rating"]
-            comment = form.cleaned_data["comment"]
-            rating = form.save(commit=False)
-            rating.project = project
-            rating.author = current_user
-            rating.design_rating = design_rating
-            rating.usability_rating = usability_rating
-            rating.content_rating = content_rating
-            rating.comment = comment
-            rating.save()
-            # return redirect('home')
+            edit = form.save(commit=False)
+            edit.user = request.user
+            edit.save()
+            return redirect('edit_profile')
     else:
-        form = RatingForm()
-    return render(request,'rate.html', {'project' : project, 'form' : form})   
+        form = ProfileForm()
+    return render(request, 'edit_profile.html', locals())
+
+    '''
+    logs out current user from account
+    '''
+def logout(request):
+    return render(request, 'home.html')
+
+def rate(request):
+    profile = User.objects.get(username=request.user)
+    return render(request,'rate.html',locals())
+
+def view_rate(request,project_id):
+    user = User.objects.get(username=request.user)
+    project = Project.objects.get(pk=project_id)
+    rate = Rate.objects.filter(project_id=project_id)
+    print(rate)
+    return render(request,'project.html',locals())
+
+@login_required(login_url='/accounts/login')
+def rate_project(request,project_id):
+    project = Project.objects.get(pk=project_id)
+    profile = User.objects.get(username=request.user)
+    if request.method == 'POST':
+        rateform = RateForm(request.POST, request.FILES)
+        print(rateform.errors)
+        if rateform.is_valid():
+            rating = rateform.save(commit=False)
+            rating.project = project
+            rating.user = request.user
+            rating.save()
+            return redirect('vote',project_id)
+    else:
+        rateform = RateForm()
+    return render(request,'rate.html',locals())
+
+@login_required(login_url='/accounts/login/')
+def vote(request,project_id):
+   try:
+       project = Project.objects.get(pk=project_id)
+       rate = Rate.objects.filter(project_id=project_id).all()
+       print([r.project_id for r in rate])
+       rateform = RateForm()
+   except DoesNotExist:
+       raise Http404()
+   return render(request,"project.html", locals())
 
 class ProfileList(APIView):
-    
     def get(self, request, format=None):
-        all_profiles = Profile.objects.all()
-        serializers = ProfileSerializer(all_profiles, many=True)
+        all_profile = Profile.objects.all()
+        serializers = ProfileSerializer(all_profile, many=True)
         return Response(serializers.data)
 
     def post(self, request, format=None):
         serializers = ProfileSerializer(data=request.data)
-        permission_classes = (IsAdminOrReadOnly,)
-        if serializers.is_valid():
-            serializers.save()
-            return Response(serializers.data, status=status.HTTP_201_CREATED)
-        return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)     
-
-class ProfileDescription(APIView):
-    permission_classes = (IsAdminOrReadOnly,)
-    
-    def get_profile(self, pk):
-        try:
-            return Profile.objects.get(pk=pk)
-        except Profile.DoesNotExist:
-            return Http404
-
-    def get(self, request, pk, format=None):
-        profile = self.get_profile(pk)
-        serializers = ProfileSerializer(profile)
-        return Response(serializers.data)
-
-    def put(self, request, pk, format=None):
-        profile = self.get_profile(pk)
-        serializers = ProfileSerializer(profile, request.data)
-        if serializers.is_valid():
-            serializers.save()
-            return Response(serializers.data)
-        else:
-            return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk, format=None):
-        profile = self.get_profile(pk)
-        profile.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)    
-
-class ProjectList(APIView):
-
-    def get(self, request, format=None):
-        all_projects = Project.objects.all()
-        serializers = ProjectSerializer(all_projects, many=True)
-        return Response(serializers.data)
-
-    def post(self, request, format=None):
-        serializers = ProjectSerializer(data=request.data)
-        permission_classes = (IsAdminOrReadOnly,)
         if serializers.is_valid():
             serializers.save()
             return Response(serializers.data, status=status.HTTP_201_CREATED)
         return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class ProjectDescription(APIView):
     permission_classes = (IsAdminOrReadOnly,)
-    
-    def get_project(self, pk):
-        try:
-            return Project.objects.get(pk=pk)
-        except Project.DoesNotExist:
-            return Http404
 
-    def get(self, request, pk, format=None):
-        project= self.get_project(pk)
-        serializers = ProjectSerializer(project)
+class ProjectList(APIView):
+    def get(self, request, format=None):
+        all_project = Project.objects.all()
+        serializers = ProjectSerializer(all_project, many=True)
         return Response(serializers.data)
 
-    def put(self, request, pk, format=None):
-        
-        project = self.get_project(pk)
-        serializers = ProjectSerializer(project, request.data)
+    def post(self, request, format=None):
+        serializers = ProjectSerializer(data=request.data)
         if serializers.is_valid():
             serializers.save()
-            return Response(serializers.data)
-        else:
-            return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk, format=None):
-        project = self.get_project(pk)
-        project.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-                      
+            return Response(serializers.data, status=status.HTTP_201_CREATED)
+        return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    permission_classes = (IsAdminOrReadOnly,)

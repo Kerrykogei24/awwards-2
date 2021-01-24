@@ -1,23 +1,16 @@
-from  django.urls import path
-from . import views 
-from django.conf import settings
+from django.conf.urls import url
+from . import views
 from django.conf.urls.static import static
-from rest_framework import routers
-
-# router = routers.DefaultRouter()
-# router.register(r'profile', views.ProfileViewSet)
-# router.register(r'project', views.ProjectViewSet)
-
-
-urlpatterns = [
-    path('', views.home, name='home'),
-    path('logout/', views.logout, name='logout'),
-    path('new/profile/',views.new_profile, name='profile'),
-    path('project/', views.project, name='project'),
-    path('rating/<int:pk>/',views.rating,name='rating'),
+from django.conf import settings
+urlpatterns=[
+    url('^$',views.home_page,name = 'home_page'),
+    url(r'^profile/(?P<username>\w+)', views.profile, name='profile'),
+    url(r'^upload/$', views.upload_project, name='upload_project'),
+    url(r'^search/', views.search_results, name='search_results'),
+    url(r'^edit$', views.edit, name='edit_profile'),
+    url(r'^rate/(?P<project_id>\d+)',views.rate_project, name='rate'),
+    url(r'^vote/(?P<project_id>\d+)',views.vote, name='vote'),
+    url(r'^api/profile/$', views.ProfileList.as_view())
 ]
-
 if settings.DEBUG:
-    urlpatterns += static(
-        settings.MEDIA_URL, 
-        document_root = settings.MEDIA_ROOT)
+    urlpatterns+= static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
