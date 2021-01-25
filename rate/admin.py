@@ -1,7 +1,6 @@
-# from django.contrib import admin
-# from award.views import *
-# # Register your models here.
+from django.contrib import admin
+from . import models
 
-# admin.site.register(Rate)
-# admin.site.register(Profile)
-# admin.site.register(Project)
+admin.site.register(models.Profile)
+admin.site.register(models.Post)
+admin.site.register(models.Rating)
