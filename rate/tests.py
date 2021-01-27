@@ -1,68 +1,83 @@
 from django.test import TestCase
 from .models import *
-
-
-class TestProfile(TestCase):
+from django.contrib.auth.models import User
+import datetime as dt
+from django.utils import timezone
+# Create your tests here.
+class ProfileTestClass(TestCase):
+    #Set up Method
     def setUp(self):
-        self.user = User(id=1, username='charles', password='wer2345uyq')
+        '''
+        test case for profiles
+        '''
+        self.user = User(username='tony')
         self.user.save()
+        self.profile = Profile(photo='black and white',bio='test bio',contact="abc@xyz.com",user=self.user)
+        self.profile.save_profile()
+
+
+    def tearDown(self):
+        Profile.objects.all().delete()
 
     def test_instance(self):
-        self.assertTrue(isinstance(self.user, User))
+        self.assertTrue(isinstance(self.profile,Profile))
 
-    def test_save_user(self):
+    def test_save_method(self):
+        self.profile.save_profile()
+        profiles = Profile.objects.all()
+        self.assertTrue(len(profiles) > 0)
+
+    def test_delete_method(self):
+        self.profile.save_profile()
+        self.profile.delete_profile()
+        profile = Profile.objects.all()
+        self.assertTrue(len(profile) == 0)
+
+class ProjectTestClass(TestCase):
+
+    def setUp(self):
+        self.project = Project(title ='new project', image='image.url',description="awwaaards",link="http://www.awwaards.com")
+
+    def tearDown(self):
+        Project.objects.all().delete()
+
+    def test_instance(self):
+        self.assertTrue(isinstance(self.project, Project))
+
+    def test_save_method(self):
+        self.project.save_project()
+        projects = Project.objects.all()
+        self.assertTrue(len(projects)>0)
+    def test_delete_method(self):
+        self.project.save_project()
+        projects = Project.objects.all()
+        self.project.delete_project()
+        projects = Project.objects.all()
+        self.assertTrue(len(projects)==0)
+
+class ReviewTestClass(TestCase):
+    def setUp(self):
+        # self.project=Project(caption="test iamge",likes=1)
+        self.user = User(username='tony')
         self.user.save()
+        self.project = Project(title ='new project', image='image.url',description="awwaaards",link="http://www.awwaards.com")
+        self.project.save_project()
 
-    def test_delete_user(self):
-        self.user.delete()
+        self.new_review=Review(design="9",usability="9",content="10",user=self.user,project=self.project)
+        self.new_review.save_review()
 
-
-class PostTest(TestCase):
-    def setUp(self):
-        self.user = User.objects.create(id=1, username='charles')
-        self.post = Post.objects.create(id=1, title='test post', photo='https://ucarecdn.com/0ccf61ff-508e-46c6-b713-db51daa6626e', description='desc',
-                                        user=self.user, url='http://ur.coml')
+    def tearDown(self):
+        Review.objects.all().delete()
 
     def test_instance(self):
-        self.assertTrue(isinstance(self.post, Post))
+        self.assertTrue(isinstance(self.new_review,Review))
 
-    def test_save_post(self):
-        self.post.save_post()
-        post = Post.objects.all()
-        self.assertTrue(len(post) > 0)
+    def test_save_comment(self):
+        reviews = Review.objects.all()
+        self.assertTrue(len(reviews)>0)
 
-    def test_get_posts(self):
-        self.post.save()
-        posts = Post.all_posts()
-        self.assertTrue(len(posts) > 0)
-
-    def test_search_post(self):
-        self.post.save()
-        post = Post.search_project('test')
-        self.assertTrue(len(post) > 0)
-
-    def test_delete_post(self):
-        self.post.delete_post()
-        post = Post.search_project('test')
-        self.assertTrue(len(post) < 1)
-
-
-class RatingTest(TestCase):
-    def setUp(self):
-        self.user = User.objects.create(id=1, username='charles')
-        self.post = Post.objects.create(id=1, title='test post', photo='https://ucarecdn.com/0ccf61ff-508e-46c6-b713-db51daa6626e', description='desc',
-                                        user=self.user, url='http://ur.coml')
-        self.rating = Rating.objects.create(id=1, design=6, usability=7, content=9, user=self.user, post=self.post)
-
-    def test_instance(self):
-        self.assertTrue(isinstance(self.rating, Rating))
-
-    def test_save_rating(self):
-        self.rating.save_rating()
-        rating = Rating.objects.all()
-        self.assertTrue(len(rating) > 0)
-
-    def test_get_post_rating(self, id):
-        self.rating.save()
-        rating = Rating.get_ratings(post_id=id)
-        self.assertTrue(len(rating) == 1)
+    def test_delete_comment(self):
+        self.new_review.save_review()
+        self.new_review.delete_review()
+        reviews = Review.objects.all()
+        self.assertTrue(len(reviews)==0)

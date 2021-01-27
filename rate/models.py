@@ -1,21 +1,24 @@
 from django.db import models
 from django.contrib.auth.models import User
+from tinymce.models import HTMLField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from pyuploadcare.dj.models import ImageField
-import datetime as dt
-
+from django.utils import timezone
+from django.core.validators import MaxValueValidator, MinValueValidator
+import numpy as np
+# Create your models here.
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    profile_picture = models.ImageField(upload_to='images/', default='default.png')
-    bio = models.TextField(max_length=500, default="My Bio", blank=True)
-    name = models.CharField(blank=True, max_length=120)
-    location = models.CharField(max_length=60, blank=True)
-    contact = models.EmailField(max_length=100, blank=True)
+    photo = models.ImageField(upload_to='profpics/',default='NO IMAGE')
+    bio = HTMLField()
+    # bio = models.CharField(max_length=60,blank=True)
+    # user = models.ForeignKey(User, null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile",primary_key=True)
+    contact = models.CharField(max_length=60,blank=True)
+    # timestamp = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f'{self.user.username} Profile'
+    timestamp = models.DateTimeField(default=timezone.now())
+    # timestamp = models.DateTimeField(auto_now_add=True,null = True)
 
     @receiver(post_save, sender=User)
     def create_user_profile(sender, instance, created, **kwargs):
@@ -26,38 +29,79 @@ class Profile(models.Model):
     def save_user_profile(sender, instance, **kwargs):
         instance.profile.save()
 
-
-class Post(models.Model):
-    title = models.CharField(max_length=155)
-    url = models.URLField(max_length=255)
-    description = models.TextField(max_length=255)
-    technologies = models.CharField(max_length=200, blank=True)
-    photo = ImageField(manual_crop='1280x720')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
-    date = models.DateTimeField(auto_now_add=True, blank=True)
-
     def __str__(self):
-        return f'{self.title}'
+        return self.user.username
 
-    def delete_post(self):
+    def save_profile(self):
+        self.save()
+
+    def delete_profile(self):
         self.delete()
 
     @classmethod
-    def search_project(cls, title):
-        return cls.objects.filter(title__icontains=title).all()
-
+    def filter_by_id(cls, id):
+        profile = Profile.objects.filter(user = id).first()
+        return profile
     @classmethod
-    def all_posts(cls):
-        return cls.objects.all()
+    def get_by_id(cls, id):
+        profile = Profile.objects.get(user = id)
+        return profile
 
-    def save_post(self):
+class Project(models.Model):
+    title = models.CharField(max_length=60,blank=True)
+    image = models.ImageField(upload_to='projectpics/',default='NO IMAGE')
+    description = HTMLField()
+    # description = models.CharField(max_length=60,blank=True)
+    link = models.URLField(blank=True)
+    user = models.ForeignKey(User, null=True,on_delete=models.CASCADE)
+    profile = models.ForeignKey(Profile,null=True,on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    # Converted map into list after this error
+    # unsupported operand type(s) for /: ‘map’ and 'iFalse
+    def avg_design(self):
+        design_reviews = list(map(lambda x: x.design, self.review_set.all()))
+        return np.mean(design_reviews)
+    def avg_content(self):
+        content_reviews = list(map(lambda x: x.content, self.review_set.all()))
+        return np.mean(content_reviews)
+    def avg_usability(self):
+        usability_reviews = list(map(lambda x: x.usability, self.review_set.all()))
+        return np.mean(usability_reviews)
+
+    def __str__(self):
+        return self.title
+
+    def save_project(self):
         self.save()
 
+    def delete_project(self):
+        self.delete()
 
+    @classmethod
+    def project_by_id(cls,id):
+        project = Project.objects.filter(id =id)
+        return project
 
+    @classmethod
+    def get_projects(cls):
+        projects = Project.objects.all()
+        return projects
 
-class Rating(models.Model):
-    rating = (
+    @classmethod
+    def get_profile_pic(cls,profile):
+        projects = Project.objects.filter(profile__pk = profile)
+        return projects
+    @classmethod
+    def search_by_title(cls,search_term):
+    	projects = cls.objects.filter(title__icontains=search_term)
+    	return projects
+
+    class Meta:
+        ordering = ['-timestamp']
+class Review(models.Model):
+    # https://www.codementor.io/jadianes/get-started-with-django-building-recommendation-review-app-du107yb1a
+    REVIEW_CHOICES = (
         (1, '1'),
         (2, '2'),
         (3, '3'),
@@ -69,24 +113,26 @@ class Rating(models.Model):
         (9, '9'),
         (10, '10'),
     )
+    # design = models.PositiveIntegerField(default=0,blank=True, validators=[MaxValueValidator(10),])
+    design = models.IntegerField(choices=REVIEW_CHOICES,default=0,blank=False)
+    usability = models.IntegerField(choices=REVIEW_CHOICES,default=0,blank=False)
+    content = models.IntegerField(choices=REVIEW_CHOICES,default=0,blank=False)
+    average =  models.DecimalField(default=1,blank=False,decimal_places=2,max_digits=40)
+    project = models.ForeignKey(Project,null=True,on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User,null=True,blank=True,on_delete=models.CASCADE)
 
-    design = models.IntegerField(choices=rating, default=0, blank=True)
-    usability = models.IntegerField(choices=rating, blank=True)
-    content = models.IntegerField(choices=rating, blank=True)
-    score = models.FloatField(default=0, blank=True)
-    design_average = models.FloatField(default=0, blank=True)
-    usability_average = models.FloatField(default=0, blank=True)
-    content_average = models.FloatField(default=0, blank=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='rater')
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='ratings', null=True)
+    # usability =  models.PositiveIntegerField(default=0,blank=True, validators=[MaxValueValidator(10),])
+    # content =  models.PositiveIntegerField(default=0,blank=True, validators=[MaxValueValidator(10),])
+    # user =  models.PositiveIntegerField(default=0,blank=True, validators=[MaxValueValidator(10),])
+    # user = models.ForeignKey(User,null=True,blank=True)
 
-    def save_rating(self):
-        self.save()
-
-    @classmethod
-    def get_ratings(cls, id):
-        ratings = Rating.objects.filter(post_id=id).all()
-        return ratings
 
     def __str__(self):
-        return f'{self.post} Rating'
+        return self.user
+
+    def save_review(self):
+        self.save()
+
+    def delete_review(self):
+        self.delete()
