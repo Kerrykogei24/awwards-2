@@ -2,7 +2,9 @@ from django.http import HttpResponse, Http404,HttpResponseRedirect
 from django.shortcuts import render,redirect,get_object_or_404
 from rate.models import *
 from rate.forms import *
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
 from rest_framework.response import Response
@@ -255,3 +257,7 @@ class ProfileDescription(APIView):
         profile = self.get_profile(pk)
         profile.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+def logout_request(request):
+    logout(request)
+    return redirect('/accounts/login/')
