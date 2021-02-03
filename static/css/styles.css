@@ -1,154 +1,145 @@
 .circle-wrapper {
     size: 200px;
     animation: 3.33s;
-  
     background-color: #f7f9fc;
     color: #5ca7ff;
-  
     position: relative;
-  
     display: block;
     height: size;
     width: size;
-  
     background: background-color;
     border-radius: 50%;
 }
 
-    __circle {
-      width: 100%;
-      height: 100%;
-  
-      animation: rotate animation-time linear infinite;
-    }     
-  
-      :after, :before {
-        content: '';
-  
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: 1;
-  
-        width: 100%;
-        height: 50%;
-      }
-  
-      :before {
-        border-radius: size size 0 0;
-        background-image: linear-gradient(to right, rgba(circle-color, .5), circle-color);
-      }
-  
+__circle {
+    width: 100%;
+    height: 100%;
+    animation: rotate animation-time linear infinite;
+}
 
-      :after {
-        top: 50%;
-  
-        border-radius: 0 0 size size;
-        background-image: linear-gradient(to right, rgba(circle-color, .5), transparent);
-      }
-    
-  
-    __content {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 2;
-  
+ :after,
+ :before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 50%;
+}
 
-      height: 90%;
-      width: 90%;
-  
-      background: #fff;
-      border-radius: 50%;
-    }
-  
-  
-  @keyframes rotate {
-      0% {
-          transform: rotate(0deg);
-      }
-  
-      100% {
-          transform: rotate(360deg);
-      }
-  }
-  
-  /**
-   * Additional styles.
-   */
-  .description {
-    margin-bottom: 15px;
-  }
-  
-  .time {
+ :before {
+    border-radius: size size 0 0;
+    background-image: linear-gradient(to right, rgba(circle-color, .5), circle-color);
+}
+
+ :after {
+    top: 50%;
+    border-radius: 0 0 size size;
+    background-image: linear-gradient(to right, rgba(circle-color, .5), transparent);
+}
+
+__content {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-  }
-  __value__unit {
-      display: block;
-  
-      text-align: center;
-      line-height: 1;
+    z-index: 2;
+    height: 90%;
+    width: 90%;
+    background: #fff;
+    border-radius: 50%;
+}
+
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
     }
-  
-    __value {
-      font-size: 36px;
+    100% {
+        transform: rotate(360deg);
     }
-  
-    __unit {
-      font-size: 24px;
-    }
-  
-  
-  
-  #navbarr{
+}
+
+
+/**
+   * Additional styles.
+   */
+
+.description {
+    margin-bottom: 15px;
+}
+
+.time {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+__value__unit {
+    display: block;
+    text-align: center;
+    line-height: 1;
+}
+
+__value {
+    font-size: 36px;
+}
+
+__unit {
+    font-size: 24px;
+}
+
+#navbarr {
     background: black;
-  /* background: -webkit-linear-gradient(to right, #F11712, #0099F7);
+    /* background: -webkit-linear-gradient(to right, #F11712, #0099F7);
   background: linear-gradient(to right, #F11712, #0099F7); */
-  margin-bottom:80px;
-  }
-  .top-images {
-    height:50px;
-    width:50px;
+    margin-bottom: 80px;
+}
+
+.top-images {
+    height: 50px;
+    width: 50px;
     border: 4px double #F3176E;
-  }
-    .far:hover{
-      color:#2984D0;
-    
-  
-    }
-  
-  #navbarrr{
+}
+
+.far:hover {
+    color: #2984D0;
+}
+
+#navbarrr {
     /* #00A3B4 */
     background: black;
-  /* background: -webkit-linear-gradient(to right, #F11712, #0099F7); */
-  /* background: linear-gradient(to right, #F11712, #0099F7); */
-  margin-bottom:80px;
-  }
-  #profiles{
-    border: 4px double #F3176E;;
-  }
-  *{
+    /* background: -webkit-linear-gradient(to right, #F11712, #0099F7); */
+    /* background: linear-gradient(to right, #F11712, #0099F7); */
+    margin-bottom: 80px;
+}
+
+#profiles {
+    border: 4px double #F3176E;
+    ;
+}
+
+* {
     font-family: 'Roboto', sans-serif;
-  }
-  body{
+}
+
+body {
     background-color: #F9F9F9;
-  
-  }
-  .ionic {
+}
+
+.ionic {
     font-size: 40px;
-  
-    color:black;
-  }
-  .ionic:hover {
+    color: black;
+}
+
+.ionic:hover {
     /* font-size: 46px; */
-  
-    color:white;
-  }
-    .navbar {
+    color: white;
+}
+
+
+/* .navbar {
       display: -webkit-box;
       display: -ms-flexbox;
       display: flex;
@@ -198,4 +189,4 @@
     }
     .navbar .input-search:focus {
       text-align: left;
-    }
+    } */
