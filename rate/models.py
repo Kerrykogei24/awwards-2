@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.core.validators import MaxValueValidator, MinValueValidator
 import numpy as np
+from django.utils import timezone
 # Create your models here.
 
 class Profile(models.Model):
@@ -17,7 +18,7 @@ class Profile(models.Model):
     contact = models.CharField(max_length=60,blank=True)
     # timestamp = models.DateTimeField(auto_now_add=True)
 
-    timestamp = models.DateTimeField(default=timezone.now())
+    timestamp = models.DateTimeField(default=timezone.now)
     # timestamp = models.DateTimeField(auto_now_add=True,null = True)
 
     @receiver(post_save, sender=User)
